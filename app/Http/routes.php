@@ -20,3 +20,11 @@ Route::get('admin', 'AdministratorController@index');
 Route::post('admin/login', 'AdministratorController@postLogin');
 
 Route::get('admin/logout', 'AdministratorController@logout');
+
+Route::get('admin/catlog/addnew', 'CatController@create');
+Route::post('admin/catlog/addcatlog', 'CatController@store');
+
+Route::get('admin/catlog/list', 'CatController@show');
+
+Route::get('admin/catlog/getcatloglist', 'CatController@getlist');
+
