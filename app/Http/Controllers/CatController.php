@@ -99,35 +99,21 @@ class CatController extends Controller
      */
     public function getlist()
     {
-        
+        $totalRecords = Catlog::get()->count();
         $main_data = array();
-        $main_data['draw'] = 1;
-        $main_data['recordsTotal'] = 57;
-        $main_data['recordsFiltered'] = 57;
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
-        $main_data['data'][] = array("Airi","Satou","Accountant","Tokyo","28th Nov 08","$162,700");
+        
+        if( $totalRecords > 0 ){
+            
+            $main_data['draw'] = 1;
+            $main_data['recordsTotal'] = $totalRecords;
+            $main_data['recordsFiltered'] = $totalRecords;
+
+            $records = Catlog::select( array('name', 'icon_file', 'created_at') )->get();
+
+            foreach( $records as $key=>$value ){
+               $main_data['data'][] = array($value->name, $value->icon_file, date('ds M Y H:i:s', strtotime($value->created_at)) ); 
+            }
+        }
 
         return Response::json($main_data);
     }
