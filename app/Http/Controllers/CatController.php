@@ -107,11 +107,13 @@ class CatController extends Controller
             $main_data['draw'] = 1;
             $main_data['recordsTotal'] = $totalRecords;
             $main_data['recordsFiltered'] = $totalRecords;
-
-            $records = Catlog::select( array('name', 'icon_file', 'created_at') )->get();
-
+           
+            $records = Catlog::select( array('id', 'name', 'icon_file', 'created_at' ) )->get();
+            
             foreach( $records as $key=>$value ){
-               $main_data['data'][] = array($value->name, $value->icon_file, date('ds M Y H:i:s', strtotime($value->created_at)) ); 
+                $edit ='<a href="edit/'.$value->id.'"><i class="glyphicon glyphicon-edit"></i></a>';
+                $delete = '<a href="javascript:;" data-id="'.$value->id.'"><i class="glyphicon glyphicon-remove"></i></a>'; 
+                $main_data['data'][] = array($value->name, $value->icon_file, date('ds M Y H:i:s', strtotime($value->created_at)), $edit, $delete ); 
             }
         }
 
@@ -126,7 +128,7 @@ class CatController extends Controller
      */
     public function edit($id)
     {
-        //
+        echo $id; die;
     }
 
     /**

@@ -28,3 +28,5 @@ Route::get('admin/catlog/list', 'CatController@show');
 
 Route::get('admin/catlog/getcatloglist', 'CatController@getlist');
 
+Route::get('admin/catlog/edit/{$id}', 'CatController@edit');
+

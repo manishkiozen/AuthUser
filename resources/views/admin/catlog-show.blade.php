@@ -12,6 +12,8 @@
 		                <th>Name</th>
 		                <th>Icon</th>
 		                <th>Create date</th>
+		                <th>Edit</th>
+		                <th>Delete</th>
 		            </tr>
 		        </thead>		       
 		    </table>
