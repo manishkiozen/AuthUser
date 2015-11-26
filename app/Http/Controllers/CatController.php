@@ -175,7 +175,7 @@ class CatController extends Controller
             
             foreach( $records as $key=>$value ){
                 $edit ='<a href="edit/'.$value->id.'mlm'.$unique.'"><i class="glyphicon glyphicon-edit"></i></a>';
-                $delete = '<a href="javascript:;" data-id="'.$value->id.'"><i class="glyphicon glyphicon-remove"></i></a>'; 
+                $delete = '<a href="javascript:;" data-id="'.$value->id.$unique.'" data-token="mlm'.$unique.'ppa" class="cateogry-delete"><i class="glyphicon glyphicon-remove"></i></a>'; 
 
                 $img = '';
                 if( $value->icon_file ){
@@ -261,7 +261,6 @@ class CatController extends Controller
             // delete data from session variable
             Session::forget('secure_id');
 
-            //Session::set('flush_message', 'Catlog add successfully!');
             return Redirect::to('admin/catlog/list')->with('flush_message', 'Catlog update successfully!');
         }
 
@@ -276,9 +275,35 @@ class CatController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($id, $token)
     {
-        
+        try{
+            // remove static keyword from token
+            $token = str_replace('mlm', '', $token);
+            $token = str_replace('ppa', '', $token);
+
+            $id = str_replace($token, '', $id);
+           
+            $catlog = Catlog::find($id);
+            $record = Catlog::select('icon_file')->where('id', $id)->get();
+
+            // delete record
+            if( $catlog->delete() ){
+
+                // remove old file
+                $filename =  base_path().$record[0]->icon_file;
+                if (File::exists($filename)) {
+                    File::delete($filename);
+                } 
+
+                return Redirect::to('admin/catlog/list')->with('flush_message', 'Catlog deleted successfully!');
+            }
+
+            return Redirect::to('admin/catlog/list')->with('flush_message', 'Catlog could not deleted!');  
+        }
+        catch(Exception $e){
+            return Redirect::to('admin/catlog/list')->with('flush_message', 'There is an error in application');  
+        }
     }
 
     /**

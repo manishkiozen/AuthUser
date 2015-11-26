@@ -47,6 +47,14 @@
                 } ],
 		        "ajax": "getcatloglist"
 		    } );
+
+            $(document).on('click', '.cateogry-delete', function(){
+                if( confirm('Are you sure!') ){
+                    var paramFirst = $(this).data('id');
+                    var paramSecond = $(this).data('token');
+                    window.location.href = '{{{ Config::get('app.url')}}}admin/catlog/delete/'+paramFirst+'/'+paramSecond;
+                }
+            });
 		} );
     </script>
     @endif
