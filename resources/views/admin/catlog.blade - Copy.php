@@ -36,6 +36,21 @@
                 </div>
             </div>
 
+            @if( count( $categories ) > 0 )
+            <div class="form-group">
+                {!! Form::label('parent','Parent CatLog:',['class'=>'col-sm-3 control-label']) !!}
+                <div class="col-sm-8">
+                    
+                    @if( $update )
+                        {!! Form::select('parent', $categories , $record[0]->parent, ['class'=>'control-label']) !!}
+                    @else
+                        {!! Form::select('parent', $categories ,null, ['class'=>'control-label']) !!}
+                    @endif
+
+                </div>
+            </div>
+            @endif
+
             <div class="form-group">
                 {!! Form::label('icon_file','Icon:',['class'=>'col-sm-3 control-label']) !!}
                 <div class="col-sm-8">
@@ -44,7 +59,7 @@
 
                 @if( $update )
                     @if( $record[0]->icon_file )
-                    <div class="col-sm-8" style="margin-top:20px;">
+                    <div class="col-sm-8">
                         <img src="{{{ Config::get('app.url').$record[0]->icon_file }}}" height="50" width="50" />
                     </div>
                     @endif

@@ -16,6 +16,7 @@ class CreateCatlogTable extends Migration
             $table->increments('id');
             $table->string('name');
             $table->string('icon_file');
+            $table->integer('parent');
             $table->integer('position');
             $table->enum('status', array('0', '1'));
             $table->timestamps();

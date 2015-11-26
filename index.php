@@ -19,3 +19,10 @@ if ($uri !== '/' && file_exists(__DIR__.'/public'.$uri)) {
 }
 
 require_once __DIR__.'/public/index.php';
+
+// print values
+function pr($array){
+	echo "<pre>";
+	print_r($array);
+	die();
+}
