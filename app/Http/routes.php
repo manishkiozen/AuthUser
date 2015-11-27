@@ -15,19 +15,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('admin', 'AdministratorController@index');
+Route::get('admin', 'AdministratorController@index' );
+Route::post('admin/login', ['middleware' => 'csrf', 'uses'=>'AdministratorController@postLogin'] );
 
-Route::post('admin/login', 'AdministratorController@postLogin');
+Route::get('admin/logout', ['middleware' => 'authuser', 'uses'=>'AdministratorController@logout']);
 
-Route::get('admin/logout', 'AdministratorController@logout');
+Route::get('admin/catlog/addnew', ['middleware' => 'authuser', 'uses'=>'CatController@create']);
+Route::post('admin/catlog/addcatlog', ['middleware' => ['authuser', 'csrf'], 'uses'=>'CatController@store' ] );
+Route::post('admin/catlog/updateCatlog/{id}', ['middleware' => ['authuser', 'csrf'], 'uses'=>'CatController@update'] );
+Route::get('admin/catlog/list', ['middleware' => 'authuser', 'uses'=>'CatController@show']);
 
-Route::get('admin/catlog/addnew', 'CatController@create');
-Route::post('admin/catlog/addcatlog', 'CatController@store');
-Route::post('admin/catlog/updateCatlog/{id}', 'CatController@update');
-Route::get('admin/catlog/list', 'CatController@show');
+Route::get('admin/catlog/getcatloglist', ['middleware' => 'authuser', 'uses'=>'CatController@getlist']);
 
-Route::get('admin/catlog/getcatloglist', 'CatController@getlist');
-
-Route::get('admin/catlog/edit/{id}', 'CatController@edit');
-Route::get('admin/catlog/delete/{id}/{token}', 'CatController@destroy');
+Route::get('admin/catlog/edit/{id}', ['middleware' => 'authuser', 'uses'=>'CatController@edit']);
+Route::get('admin/catlog/delete/{id}/{token}', ['middleware' => 'authuser', 'uses'=>'CatController@destroy']);
 

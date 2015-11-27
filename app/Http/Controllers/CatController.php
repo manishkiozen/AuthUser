@@ -59,7 +59,7 @@ class CatController extends Controller
             'name' => 'required',
         ]);
 
-        $catlogName = $request->only('name');
+        $catlogName = $request->only('name', '_token');
 
         if( $catlogName['name'] != '' ){
 
