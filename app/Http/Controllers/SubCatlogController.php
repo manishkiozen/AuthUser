@@ -6,15 +6,16 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\Catlog;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Support\Facades\Redirect;
+use App\SubCatlog;
+use Redirect;
+use Validator;
 use Session;
 use Response;
 use File;
 use Config;
+use DB;
 
-class CatController extends Controller
+class SubCatlogController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -23,7 +24,7 @@ class CatController extends Controller
      */
     public function index()
     {
-        return view('admin.catlog-show');
+        return view('admin.sub-catlog-show');
     }
 
     /**
@@ -33,7 +34,7 @@ class CatController extends Controller
      */
     public function create()
     {
-        return view('admin.catlog', array('update'=>false));
+        return view( 'admin.sub-catlog', array('update'=>false, 'categories'=> $this->getCatlogs() ));
     }
 
     /**
@@ -46,13 +47,14 @@ class CatController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
+            'parent' => 'required|',
         ]);
 
-        $catlogName = $request->only('name', '_token');
+        $catlogName = $request->only('name', 'parent');
 
         if( $catlogName['name'] != '' ){
 
-            $catlog = new Catlog;
+            $catlog = new SubCatlog;
             $imageName = '';
 
             $position = $catlog->max('position');
@@ -66,7 +68,7 @@ class CatController extends Controller
                 ]);
 
                 $imageName = strtotime(date('Y-m-d H:i:s')).'.'.$request->file('icon_file')->getClientOriginalExtension();    
-                $path = '/public/images/catalog/';
+                $path = '/public/images/subcatlog/';
 
                 $request->file('icon_file')->move(
                     base_path() . $path, $imageName
@@ -77,6 +79,7 @@ class CatController extends Controller
 
             $catlog->name = $catlogName['name'];
             $catlog->icon_file = $imageName;
+            $catlog->catlog_id = $catlogName['parent'];
             $catlog->position = $position;
             $catlog->status = '1';
             $catlog->save();
@@ -84,7 +87,7 @@ class CatController extends Controller
            
 
             //Session::set('flush_message', 'Catlog add successfully!');
-            return Redirect::to('admin/catlog/list')->with('flush_message', 'Catlog add successfully!');
+            return Redirect::to('admin/subcatlog/list')->with('flush_message', 'Catlog add successfully!');
         }
 
         return Redirect::back()->withInput()->withErrors([
@@ -99,8 +102,8 @@ class CatController extends Controller
      */
     public function show()
     {
-        $totalRecords = Catlog::where('catlog_id','0')->get()->count();
-        return view('admin.catlog-show', array('totalRecords'=>$totalRecords));
+        $totalRecords = SubCatlog::where('catlog_id', '<>', 0)->orWhere('status','1')->get()->count();
+        return view('admin.sub-catlog-show', array('totalRecords'=>$totalRecords));
     }
 
     /**
@@ -110,8 +113,13 @@ class CatController extends Controller
      */
     public function getlist(Request $request)
     {
+        // get parent with child information 
+        /*
+        * SELECT c1.*, c2.name as parentName FROM `catlog` as c1, catlog c2 where c2.id = c1.parent
+        */
+
         // get total rows   
-        $totalRecords = Catlog::where('catlog_id','0')->get()->count();
+        $totalRecords = SubCatlog::where('catlog_id', '<>', 0)->get()->count();
         $main_data = array();
         
         if( $totalRecords > 0 ){
@@ -133,19 +141,19 @@ class CatController extends Controller
             $take = 10;
 
             // query object 
-            $query = Catlog::query();
-            $query->select('id', 'name', 'icon_file', 'created_at')->where('catlog_id', '0');
+            $query = SubCatlog::query();
+            $query->select('catlog.id', 'catlog.name', 'catlog.icon_file', 'catlog.created_at', 'c2.name as parentName')->join('catlog as c2', 'c2.id', '=', 'catlog.catlog_id');
 
             // get request from database
             if( $request->has('search') ){
                 $req = $request->only('search', 'order', 'start', 'length', 'draw');
 
                 // pre defined filters list
-                $filters = array('name','icon_file','created_at');
+                $filters = array('catlog.name','catlog.icon_file','catlog.created_at');
               
                 // serarch records
                 if(!empty( $req['search']['value'])){
-                    $query->where('name', 'like', '%'.$req['search']['value'].'%');
+                    $query->where('catlog.name', 'like', '%'.$req['search']['value'].'%');
                 }
 
                 // record get according 
@@ -171,7 +179,7 @@ class CatController extends Controller
                     $img = '<img src="'.Config::get('app.url').$value->icon_file.'" height="30" width="30" />'; 
                 }
 
-                $main_data['data'][] = array($value->name, $img, date('d M Y H:i:s', strtotime($value->created_at)), $edit, $delete ); 
+                $main_data['data'][] = array($value->name, $value->parentName, $img, date('d M Y H:i:s', strtotime($value->created_at)), $edit, $delete ); 
             }
         }
 
@@ -188,13 +196,13 @@ class CatController extends Controller
     public function edit($id)
     {
         $id = str_replace('mlm'.Session::get('secure_url'), '', $id);
-        $record = Catlog::select( array('id', 'name', 'icon_file') )->where('id', $id)->get();
+        $record = SubCatlog::select( array('id', 'name', 'icon_file', 'catlog_id') )->where('id', $id)->get();
        
         if( count($record) > 0 ){
             Session::forget('secure_url');
             // set unique token into session
             Session::set('secure_id', $this->getUniqueNo() ); 
-            return view('admin.catlog', array('record'=>$record,'update'=>true));
+            return view('admin.sub-catlog', array('record'=>$record,'update'=>true, 'categories'=> $this->getCatlogs() ));
         }
 
         return Redirect::back();
@@ -211,16 +219,17 @@ class CatController extends Controller
     {
         $this->validate($request, [
            'name' => 'required',
+           'parent' => 'required',
         ]);
 
-        $catlogName = $request->only('name', '_old_img');
+        $catlogName = $request->only('name', '_old_img', 'parent');
         $imageName = $catlogName['_old_img'];
 
         if( $catlogName['name'] != '' ){
 
             // get original id
             $id = str_replace(Session::get('secure_id'), '', $id);
-            $catlog = Catlog::find($id);
+            $catlog = SubCatlog::find($id);
         
             if( $request->file('icon_file') ){
 
@@ -230,7 +239,7 @@ class CatController extends Controller
                 ]);
 
                 $imageName = strtotime(date('Y-m-d H:i:s')).'.'.$request->file('icon_file')->getClientOriginalExtension();    
-                $path = '/public/images/catalog/';
+                $path = '/public/images/subcatlog/';
 
                 $request->file('icon_file')->move(
                     base_path() . $path, $imageName
@@ -244,17 +253,17 @@ class CatController extends Controller
                 if (File::exists($filename)) {
                     File::delete($filename);
                 } 
-
             }
             
             $catlog->name = $catlogName['name'];
             $catlog->icon_file = $imageName;
+            $catlog->catlog_id = $catlogName['parent'];
             $catlog->save();         
 
             // delete data from session variable
             Session::forget('secure_id');
 
-            return Redirect::to('admin/catlog/list')->with('flush_message', 'Catlog update successfully!');
+            return Redirect::to('admin/subcatlog/list')->with('flush_message', 'Catlog update successfully!');
         }
 
         return Redirect::back()->withInput()->withErrors([
@@ -277,9 +286,8 @@ class CatController extends Controller
 
             $id = str_replace($token, '', $id);
            
-            $catlog = Catlog::find($id);
-            $record = Catlog::select('icon_file')->where('id', $id)->get();
-
+            $catlog = SubCatlog::find($id);
+            $record = SubCatlog::select('icon_file')->where('id', $id)->get();
 
             // delete record
             if( $catlog->delete() ){
@@ -290,15 +298,13 @@ class CatController extends Controller
                     File::delete($filename);
                 } 
 
-                $this->deletChildCatlog( $id );
-
-                return Redirect::to('admin/catlog/list')->with('flush_message', 'Catlog deleted successfully!');
+                return Redirect::to('admin/subcatlog/list')->with('flush_message', 'Catlog deleted successfully!');
             }
 
-            return Redirect::to('admin/catlog/list')->with('flush_message', 'Catlog could not deleted!');  
+            return Redirect::to('admin/subcatlog/list')->with('flush_message', 'Catlog could not deleted!');  
         }
         catch(Exception $e){
-            return Redirect::to('admin/catlog/list')->with('flush_message', 'There is an error in application');  
+            return Redirect::to('admin/subcatlog/list')->with('flush_message', 'There is an error in application');  
         }
     }
 
@@ -312,35 +318,23 @@ class CatController extends Controller
         return md5(rand(0000,9999));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     * @param integer parent id
-     * @return boolean value
+     /**
+     * get parent catlogs
+     *
+     * @return array value
      */
-    private  function deletChildCatlog( $id )
-    {
-        $flag = false;
+    private function getCatlogs(){
+        $categories = SubCatlog::select('id','name')->where('status','1')->where('catlog_id', '0')->get();
+        $category = array();
 
-        $record = Catlog::select('id', 'icon_file')->where('catlog_id', $id)->get();
+        if( count($categories) > 0 ){
+            $category[''] = 'Select Parent';
 
-        if( count( $record ) > 0 ){
-            foreach( $record as $key=>$value){
-
-                $catlog = Catlog::find($value->id);
-                // delete record
-                if( $catlog->delete() ){
-
-                    $flag = true;
-
-                    // remove old file
-                    $filename =  base_path().$value->icon_file;
-                    if (File::exists($filename)) {
-                        File::delete($filename);
-                    } 
-                }
+            foreach( $categories as $key=>$value ){
+                $category[$value->id] =  $value->name;
             }
-        }        
-            
-        return $flag;
+        }
+
+        return $category;
     }
 }

@@ -30,3 +30,13 @@ Route::get('admin/catlog/getcatloglist', ['middleware' => 'authuser', 'uses'=>'C
 Route::get('admin/catlog/edit/{id}', ['middleware' => 'authuser', 'uses'=>'CatController@edit']);
 Route::get('admin/catlog/delete/{id}/{token}', ['middleware' => 'authuser', 'uses'=>'CatController@destroy']);
 
+Route::get('admin/subcatlog/addnew', ['middleware' => 'authuser', 'uses'=>'SubCatlogController@create']);
+Route::post('admin/subcatlog/addcatlog', ['middleware' => ['authuser', 'csrf'], 'uses'=>'SubCatlogController@store' ] );
+Route::post('admin/subcatlog/updateCatlog/{id}', ['middleware' => ['authuser', 'csrf'], 'uses'=>'SubCatlogController@update'] );
+Route::get('admin/subcatlog/list', ['middleware' => 'authuser', 'uses'=>'SubCatlogController@show']);
+
+Route::get('admin/subcatlog/getcatloglist', ['middleware' => 'authuser', 'uses'=>'SubCatlogController@getlist']);
+
+Route::get('admin/subcatlog/edit/{id}', ['middleware' => 'authuser', 'uses'=>'SubCatlogController@edit']);
+Route::get('admin/subcatlog/delete/{id}/{token}', ['middleware' => 'authuser', 'uses'=>'SubCatlogController@destroy']);
+

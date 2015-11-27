@@ -4,13 +4,13 @@
     @section('main')
        
         <div class="col-md-8 col-md-offset-2 form-content">
-            <h3 class="heading">Catlog List</h3>
+            <h3 class="heading">Sub Catlog List</h3>
             
             @if (Session::has('flush_message'))
                 <div class="alert alert-info">{{ Session::get('flush_message') }}</div>
             @endif
             <div class="col-md-8 pull-right form-content">
-            	<a href="{{{ Config::get('app.url') }}}admin/catlog/addnew">
+            	<a href="{{{ Config::get('app.url') }}}admin/subcatlog/addnew">
             	<div class="btn btn-default">Add New</div>
             	</a>
            	</div>
@@ -19,6 +19,7 @@
 		        <thead>
 		            <tr>
 		                <th>Name</th>
+                        <th>Parent Name</th>
 		                <th>Icon</th>
 		                <th>Create date</th>
 		                <th>Edit</th>
@@ -43,16 +44,16 @@
                 "order": [[ 0, "desc" ]],
                 "aoColumnDefs" : [ {
                     'bSortable' : false,
-                    'aTargets' : [ 1, 3, 4 ]
+                    'aTargets' : [ 1, 2, 4, 5 ]
                 } ],
 		        "ajax": "getcatloglist"
 		    } );
 
             $(document).on('click', '.cateogry-delete', function(){
-                if( confirm('Are you sure delete catlog and this sub catlog') ){
+                if( confirm('Are you sure!') ){
                     var paramFirst = $(this).data('id');
                     var paramSecond = $(this).data('token');
-                    window.location.href = '{{{ Config::get('app.url')}}}admin/catlog/delete/'+paramFirst+'/'+paramSecond;
+                    window.location.href = '{{{ Config::get('app.url')}}}admin/subcatlog/delete/'+paramFirst+'/'+paramSecond;
                 }
             });
 		} );
