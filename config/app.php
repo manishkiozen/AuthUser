@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'url' => 'http://localhost:82/AuthUser/',
+    'url' => 'http://localhost/AuthUser/',
 
     /*
     |--------------------------------------------------------------------------
@@ -78,7 +78,7 @@ return [
     |
     */
 
-    'key' => env('APP_KEY', 'SomeRandomString'),
+    'key' => env('APP_KEY', 'lOTalIW5fJ99mcGjuLYfH3r7ubofWkDS'),
 
     'cipher' => 'AES-256-CBC',
 

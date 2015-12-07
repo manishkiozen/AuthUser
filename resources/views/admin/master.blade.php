@@ -10,7 +10,7 @@
         <div class="container">
         <header id="header">
             <div class="jumbotron">
-                <h2>Laravel 5: New Auth Generators and Admin Authentication</h2>
+                <h2>New Auth Generators and Admin Authentication</h2>
             </div>
         </header>
             <div class="row">
